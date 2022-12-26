@@ -1,0 +1,37 @@
+version: '3'
+services:
+
+  middleware-ws-infra-rabbitmq:
+    image: rabbitmq:3.7-management-alpine
+    container_name: rabbitmq-service
+    environment:
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USERNAME: guest
+    volumes:
+      - ${PWD}/rabbit-init/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ${PWD}/rabbit-init/definitions.json:/opt/definitions.json
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    restart: unless-stopped
+    networks:
+      - docker_default
+
+
+  middleware-ws-infra-postgres:
+    image: postgres:13.2
+    container_name: postgres-service
+    ports:
+      - "7845:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - ${PWD}/db-init/:/docker-entrypoint-initdb.d/
+    restart: unless-stopped
+    networks:
+      - docker_default
+
+networks:
+  docker_default:
+    external: true
