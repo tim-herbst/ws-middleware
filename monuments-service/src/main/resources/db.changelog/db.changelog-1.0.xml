@@ -1,0 +1,111 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet id="00000001" author="Tim Herbst">
+        <createTable tableName="MONUMENT">
+            <column name="ID" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="INSERT_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UPDATE_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="OBJECT_NUMBER" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MONUMENT_TYPE" type="VARCHAR(33)"/>
+            <column name="NAME" type="VARCHAR(750)"/>
+            <column name="DESCRIPTION" type="VARCHAR(100000)"/>
+            <column name="ADDRESS" type="VARCHAR(750)"/>
+            <column name="COUNTY" type="VARCHAR(750)"/>
+            <column name="COMMUNITY" type="VARCHAR(750)"/>
+            <column name="PHOTO_URL" type="VARCHAR(750)"/>
+        </createTable>
+
+        <addUniqueConstraint tableName="MONUMENT" columnNames="OBJECT_NUMBER, NAME" />
+
+        <createTable tableName="JUSTIFICATION">
+            <column name="ID" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="INSERT_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UPDATE_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="NAME" type="VARCHAR(750)"/>
+        </createTable>
+        <createTable tableName="SCOPE_OF_PROTECTION">
+            <column name="ID" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="INSERT_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UPDATE_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="PROTECTION" type="VARCHAR(750)"/>
+        </createTable>
+
+        <createTable tableName="MONUMENT_JUSTIFICATION">
+            <column name="MONUMENT_ID" type="UUID">
+                <constraints foreignKeyName="MONUMENT_JUSTIFICATION_MONUMENT_FK" references="MONUMENT(ID)"/>
+            </column>
+            <column name="JUSTIFICATION_ID" type="UUID">
+                <constraints foreignKeyName="MONUMENT_JUSTIFICATION_JUSTIFICATION_FK" references="JUSTIFICATION(ID)"/>
+            </column>
+        </createTable>
+        <createTable tableName="MONUMENT_SCOPE_OF_PROTECTION">
+            <column name="MONUMENT_ID" type="UUID">
+                <constraints foreignKeyName="MONUMENT_SCOPE_OF_PROTECTION_MONUMENT_FK" references="MONUMENT(ID)"/>
+            </column>
+            <column name="SCOPE_OF_PROTECTION_ID" type="UUID">
+                <constraints foreignKeyName="MONUMENT_SCOPE_OF_PROTECTION_SCOPE_OF_PROTECTION_FK"
+                             references="SCOPE_OF_PROTECTION(ID)"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="MONUMENT_JUSTIFICATION" indexName="JUSTIFICATION_MONUMENT_IDX">
+            <column name="MONUMENT_ID" />
+            <column name="JUSTIFICATION_ID" />
+        </createIndex>
+
+        <createIndex tableName="MONUMENT_SCOPE_OF_PROTECTION" indexName="SCOPE_OF_PROTECTION_MONUMENT_IDX">
+            <column name="MONUMENT_ID" />
+            <column name="SCOPE_OF_PROTECTION_ID" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="00000002" author="Tim Herbst">
+        <createView viewName="MONUMENT_TABLE_VIEW">
+            SELECT m.id,
+                   m.name,
+                   m.address,
+                   m.community,
+                   m.county,
+                   m.description,
+                   m.monument_type AS type,
+                   m.object_number,
+                   m.photo_url,
+                   (SELECT string_agg(j.name, ',' order by j.name) values_agg
+                    FROM ${database.defaultSchemaName}.justification j
+                             INNER JOIN ${database.defaultSchemaName}.monument_justification mj
+                                        on j.id = mj.justification_id AND mj.monument_id = m.id)           AS justifications,
+                   (SELECT string_agg(p.protection, ',' order by p.protection) values_agg
+                    FROM ${database.defaultSchemaName}.scope_of_protection p
+                             INNER JOIN ${database.defaultSchemaName}.monument_scope_of_protection msop
+                                        on p.id = msop.scope_of_protection_id AND msop.monument_id = m.id) AS scope_of_protections
+            FROM ${database.defaultSchemaName}.monument m;
+        </createView>
+    </changeSet>
+</databaseChangeLog>

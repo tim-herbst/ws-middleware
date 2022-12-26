@@ -1,0 +1,52 @@
+logging:
+  level:
+    org:
+      hibernate: info
+    root: info
+  config: classpath:logback-spring.xml
+
+server:
+  port: 9001
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: herbsti
+    password: jim123
+
+  datasource:
+    username: ${database.username}
+    password: ${database.password}
+    url: ${database.url}
+    initialization-mode: always
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_catalog: ${database.name}
+        default_schema: ${database.schema}
+  liquibase:
+    change-log: classpath:db.changelog/db.changelog-master.xml
+    enabled: true
+    default-schema: ${database.schema}
+
+app:
+  redeliveredMessageProcessTimeout: 100
+
+database:
+  url: jdbc:postgresql://localhost:7845/middleware
+  schema: monument
+  username: monument
+  password: 123456
+
+binding:
+  monument:
+    exchange: monument
+    queue: monument.internal.monument-service
+    routing-key: monument.event.monument-service
