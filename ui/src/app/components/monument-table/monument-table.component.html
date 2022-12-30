@@ -1,0 +1,111 @@
+<p-table
+         [resizableColumns]="true" [autoLayout]="true"
+         (onLazyLoad)="loadMonuments($event)"
+         [lazy]="true"
+         [loading]="loading"
+         [paginator]="true"
+         [responsive]="true"
+         [rows]="50"
+         [showCurrentPageReport]="true"
+         [totalRecords]="totalRecords"
+         [value]="monuments"
+         styleClass="p-datatable-sm"
+         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+         dataKey="id"
+         sortField="name">
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="objectNumber">Object number
+        <p-sortIcon field="objectNumber"></p-sortIcon>
+      </th>
+      <th pSortableColumn="type">Type
+        <p-sortIcon field="type"></p-sortIcon>
+      </th>
+      <th pSortableColumn="name">Name
+        <p-sortIcon field="name"></p-sortIcon>
+      </th>
+      <th pSortableColumn="description">Description
+        <p-sortIcon field="description"></p-sortIcon>
+      </th>
+      <th pSortableColumn="address">Address
+        <p-sortIcon field="address"></p-sortIcon>
+      </th>
+      <th>Photo URL</th>
+      <th pSortableColumn="county">County
+        <p-sortIcon field="county"></p-sortIcon>
+      </th>
+      <th pSortableColumn="community">Community
+        <p-sortIcon field="community"></p-sortIcon>
+      </th>
+      <th pSortableColumn="justifications">Justifications
+        <p-sortIcon field="justifications"></p-sortIcon>
+      </th>
+      <th pSortableColumn="scopeOfProtections">Scope of protections
+        <p-sortIcon field="scopeOfProtections"></p-sortIcon>
+      </th>
+    </tr>
+    <tr>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="objectNumber" placeholder="Search by object number"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <!-- dropdown -->
+        <p-columnFilter [showMenu]="false" class="w-full" field="type" placeholder="Search by type"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="name" placeholder="Search by name"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="description" placeholder="Search by description"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="address" placeholder="Search by address"
+                        type="text"></p-columnFilter>
+      </th>
+      <th></th>
+      <th>
+        <!-- dropdown -->
+        <p-columnFilter [showMenu]="false" class="w-full" field="county" placeholder="Search by county"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="community" placeholder="Search by community"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="justifications" placeholder="Search by justifications"
+                        type="text"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter [showMenu]="false" class="w-full" field="scopeOfprotections" placeholder="Search by protections"
+                        type="text"></p-columnFilter>
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template let-monument pTemplate="body">
+    <tr>
+      <td>{{monument.objectNumber}}</td>
+      <td>{{monument.type}}</td>
+      <td>{{monument.name}}</td>
+      <td>{{monument.description}}</td>
+      <td>{{monument.address}}</td>
+      <td>
+        <p-button (onClick)="showPicture(monument.photoUrl)" *ngIf="monument.photoUrl != null" icon="pi pi-camera"
+                  iconPos="left"></p-button>
+      </td>
+      <td>{{monument.county}}</td>
+      <td>{{monument.community}}</td>
+      <td>{{monument.justifications}}</td>
+      <td>{{monument.scopeOfProtections}}</td>
+    </tr>
+  </ng-template>
+</p-table>
+<p-overlayPanel #op>
+  <ng-template>
+    Content
+  </ng-template>
+</p-overlayPanel>
