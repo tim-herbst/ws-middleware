@@ -82,6 +82,23 @@ public class Monument extends UuidEntity {
         this.scopeOfProtection.addAll(replaceableProtections);
     }
 
+    public void update(
+            final String name,
+            final String description,
+            final String address,
+            final String community,
+            final String county,
+            final String photoUrl,
+            final Set<String> justifications,
+            final Set<String> protectionScopes) {
+        this.name = name;
+        this.description = description;
+        this.address = address;
+        this.community = community;
+        this.county = county;
+        this.photoUrl = photoUrl;
+    }
+
     @Mapper
     public interface MonumentMapper {
         Collection<Monument> toEntity(Collection<CreateMonumentsUseCase.ImportedMonuments> dtos);

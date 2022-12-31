@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface LoadMonumentPort {
 
@@ -24,4 +26,6 @@ public interface LoadMonumentPort {
      * @return
      */
     Page<MonumentTableView> loadAllPaged(Pageable pageable, Specification<MonumentTableView> specification);
+
+    Optional<Monument> findById(UUID id);
 }

@@ -1,20 +1,22 @@
 package de.hft.timherbst.monument.infrastructure.adapter.in.web;
 
 import de.hft.timherbst.common.WebAdapter;
+import de.hft.timherbst.monument.application.port.in.DeleteMonumentUseCase;
 import de.hft.timherbst.monument.application.port.in.MonumentQuery;
+import de.hft.timherbst.monument.application.port.in.UpdateMonumentUseCase;
 import de.hft.timherbst.monument.domain.MonumentTableView;
+import de.hft.timherbst.monument.infrastructure.adapter.in.web.adapter.UpdateMonumentRequest;
 import io.swagger.annotations.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @WebAdapter
 @RestController
@@ -23,6 +25,8 @@ import javax.validation.constraints.NotNull;
 class MonumentController {
 
     private final MonumentQuery monumentQuery;
+    private final UpdateMonumentUseCase updateMonumentUseCase;
+    private final DeleteMonumentUseCase deleteMonumentUseCase;
 
     @ApiResponse(code = 200, message = "Retrieves all Monuments paged", response = MonumentTableView.class)
     @GetMapping
@@ -50,5 +54,30 @@ class MonumentController {
                 .build();
 
         return ResponseEntity.ok(monumentQuery.getAllMonumentsPaged(pageable, specification));
+    }
+
+    @ApiResponse(code = 204, message = "Updates an existing monument")
+    @PatchMapping(value = "{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void updateExistingMonument(@PathVariable final UUID id, @RequestBody final UpdateMonumentRequest request) {
+        final UpdateMonumentUseCase.UpdateMonumentCommand command = UpdateMonumentUseCase.MAPPER.toCommand(
+                id,
+                request.getType(),
+                request.getName(),
+                request.getDescription(),
+                request.getAddress(),
+                request.getCounty(),
+                request.getCommunity(),
+                request.getPhotoUrl(),
+                request.getJustifications(),
+                request.getScopeOfProtections());
+        updateMonumentUseCase.updateExisting(command);
+    }
+
+    @ApiResponse(code = 204, message = "Deletes an entity by given ID")
+    @DeleteMapping(value = "{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteMonument(@PathVariable final UUID id) {
+        deleteMonumentUseCase.delete(id);
     }
 }

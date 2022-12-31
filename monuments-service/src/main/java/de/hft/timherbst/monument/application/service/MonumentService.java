@@ -1,12 +1,12 @@
 package de.hft.timherbst.monument.application.service;
 
 import de.hft.timherbst.common.UseCase;
+import de.hft.timherbst.monument.application.exceptions.ResourceNotFoundException;
 import de.hft.timherbst.monument.application.port.in.CreateMonumentsUseCase;
+import de.hft.timherbst.monument.application.port.in.DeleteMonumentUseCase;
 import de.hft.timherbst.monument.application.port.in.MonumentQuery;
-import de.hft.timherbst.monument.application.port.out.CreateMonumentPort;
-import de.hft.timherbst.monument.application.port.out.LoadJustificationPort;
-import de.hft.timherbst.monument.application.port.out.LoadMonumentPort;
-import de.hft.timherbst.monument.application.port.out.LoadScopeOfProtectionPort;
+import de.hft.timherbst.monument.application.port.in.UpdateMonumentUseCase;
+import de.hft.timherbst.monument.application.port.out.*;
 import de.hft.timherbst.monument.domain.Justification;
 import de.hft.timherbst.monument.domain.Monument;
 import de.hft.timherbst.monument.domain.MonumentTableView;
@@ -22,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,12 +31,13 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @RequiredArgsConstructor
-class MonumentService implements CreateMonumentsUseCase, MonumentQuery {
+class MonumentService implements CreateMonumentsUseCase, MonumentQuery, UpdateMonumentUseCase, DeleteMonumentUseCase {
 
     private final LoadMonumentPort loadMonumentPort;
     private final CreateMonumentPort createMonumentPort;
     private final LoadJustificationPort loadJustificationPort;
     private final LoadScopeOfProtectionPort loadScopeOfProtectionPort;
+    private final DeleteMonumentPort deleteMonumentPort;
 
     @Override
     public void importMonuments(final ImportMonumentsCommand command) {
@@ -86,7 +88,34 @@ class MonumentService implements CreateMonumentsUseCase, MonumentQuery {
     }
 
     @Override
-    public Page<MonumentTableView> getAllMonumentsPaged(final Pageable pageable, final Specification<MonumentTableView> specification) {
+    public Page<MonumentTableView> getAllMonumentsPaged(
+            final Pageable pageable, final Specification<MonumentTableView> specification) {
         return loadMonumentPort.loadAllPaged(pageable, specification);
+    }
+
+    @Override
+    public void updateExisting(final UpdateMonumentCommand command) {
+        final Monument monument = loadMonumentPort
+                .findById(command.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(Monument.class, command.getId()));
+
+        monument.update(
+                command.getName(),
+                command.getDescription(),
+                command.getAddress(),
+                command.getCommunity(),
+                command.getCounty(),
+                command.getPhotoUrl(),
+                command.getJustifications(),
+                command.getProtectionScopes());
+        log.info("Monument updated. {}", Map.of("monument", monument));
+    }
+
+    @Override
+    public void delete(final UUID id) {
+        final Monument monument =
+                loadMonumentPort.findById(id).orElseThrow(() -> new ResourceNotFoundException(Monument.class, id));
+        deleteMonumentPort.delete(monument);
+        log.info("Monument successfully deleted {}", Map.of("monument", monument));
     }
 }
