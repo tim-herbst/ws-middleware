@@ -12,6 +12,7 @@ export class MonumentService {
   }
 
   getMonuments(page: number, size: number, sort: string, filters: string) {
-    return this.http.get(this.apiUrl + '?page=' + page + '&size=' + size + '&sort=' + sort);
+    const appendix = filters == '' ? '?' : '&';
+    return this.http.get(this.apiUrl + filters + appendix + 'page=' + page + '&size=' + size + '&sort=' + sort);
   }
 }

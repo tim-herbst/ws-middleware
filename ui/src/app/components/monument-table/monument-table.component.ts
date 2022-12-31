@@ -55,36 +55,38 @@ export class MonumentTableComponent implements OnInit {
   private buildFilters = (filters: any): string => {
     let filter = '';
     if (filters.name?.value != null) {
-      filter = filter + this.append('name', filters.name.value);
+      filter = filter + this.append(filter, 'name', filters.name.value);
     }
     if (filters.county?.value != null) {
-      filter = filter + this.append('county', filters.county.value);
+      filter = filter + this.append(filter, 'county', filters.county.value);
     }
     if (filters.description?.value != null) {
-      filter = filter + this.append('description', filters.description.value);
+      filter = filter + this.append(filter, 'description', filters.description.value);
     }
     if (filters.objectNumber?.value != null) {
-      filter = filter + this.append('objectNumber', filters.objectNumber.value);
+      filter = filter + this.append(filter, 'objectNumber', filters.objectNumber.value);
     }
     if (filters.type?.value != null) {
-      filter = filter + this.append('type', filters.type.value);
+      filter = filter + this.append(filter, 'type', filters.type.value);
     }
     if (filters.community?.value != null) {
-      filter = filter + this.append('community', filters.community.value);
+      filter = filter + this.append(filter, 'community', filters.community.value);
     }
     if (filters.address?.value != null) {
-      filter = filter + this.append('address', filters.address.value);
+      filter = filter + this.append(filter, 'address', filters.address.value);
     }
     if (filters.justifications?.value != null) {
-      filter = filter + this.append('justifications', filters.justifications.value);
+      filter = filter + this.append(filter, 'justifications', filters.justifications.value);
     }
     if (filters.scopeOfprotections?.value != null) {
-      filter = filter + this.append('scopeOfProtections', filters.scopeOfprotections.value);
+      filter = filter + this.append(filter, 'scopeOfProtections', filters.scopeOfprotections.value);
     }
     return filter;
   }
 
-  private append = (constant: string, value: any): string => {
-    return '?' + constant + '=' + value;
+  private append = (filter: string, constant: string, value: any): string => {
+    if (constant == undefined) return filter;
+    const appendix = filter === '' ? '?' : '&';
+    return appendix + constant + '=' + value;
   }
 }
