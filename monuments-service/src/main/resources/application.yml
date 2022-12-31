@@ -40,7 +40,7 @@ app:
   redeliveredMessageProcessTimeout: 100
 
 database:
-  url: jdbc:postgresql://localhost:7845/middleware
+  url: jdbc:postgresql://localhost:5432/middleware
   schema: monument
   username: monument
   password: 123456
