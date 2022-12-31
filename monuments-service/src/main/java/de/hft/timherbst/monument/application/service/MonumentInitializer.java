@@ -8,31 +8,48 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.io.InputStream;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 class MonumentInitializer implements InitializingBean {
 
-    private static final String RESOURCES_DIR = "classpath:datasources/*.json";
+    private static final List<String> FILE_NAMES = List.of(
+            "datasources/dithmarschen.json",
+            "datasources/flensburg.json",
+            "datasources/kiel.json",
+            "datasources/lauenburg.json",
+            "datasources/neumuenster.json",
+            "datasources/nordfriesland.json",
+            "datasources/ostholstein.json",
+            "datasources/pinneberg.json",
+            "datasources/rendsburg.json",
+            "datasources/segeberg.json",
+            "datasources/steinburg.json",
+            "datasources/stomarn.json");
 
     private final PublishMonumentPort publishMonumentPort;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         log.info("Initializing of monuments started");
-        final Resource[] data = getData();
-        final Set<MonumentDto[]> monuments =
-                Arrays.stream(data).map(this::getMonumentsFromResources).collect(Collectors.toSet());
-        monuments.forEach(
-                dtos -> publishMonumentPort.publish(PublishMonumentPort.MonumentImportedPublishEvent.of(dtos)));
+        FILE_NAMES.forEach(name -> {
+            final InputStream inputStream = getFileFromResourceAsStream(name);
+            try {
+                final MonumentDto[] monuments =
+                        new ObjectMapper().readValue(inputStream.readAllBytes(), MonumentDto[].class);
+                publishMonumentPort.publish(PublishMonumentPort.MonumentImportedPublishEvent.of(monuments));
+            } catch (IOException e) {
+                log.error("Error occurred while importing file {}", name, e);
+                throw new RuntimeException(e);
+            }
+        });
         log.info("Initializing of monuments finished");
     }
 
@@ -41,9 +58,15 @@ class MonumentInitializer implements InitializingBean {
         return new ObjectMapper().readValue(resource.getFile(), MonumentDto[].class);
     }
 
-    private Resource[] getData() throws IOException {
-        ClassLoader loader = this.getClass().getClassLoader();
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(loader);
-        return resolver.getResources(RESOURCES_DIR);
+    @SneakyThrows
+    private InputStream getFileFromResourceAsStream(final String name) {
+        final ClassLoader loader = getClass().getClassLoader();
+        final InputStream inputStream = loader.getResourceAsStream(name);
+
+        if (inputStream == null) {
+            throw new FileNotFoundException(String.format("Could not find file for name %s", name));
+        } else {
+            return inputStream;
+        }
     }
 }
