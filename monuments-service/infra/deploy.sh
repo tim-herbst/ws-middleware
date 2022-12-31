@@ -6,6 +6,11 @@ function check_system() {
     echo "https://maven.apache.org/install.html"
     exit 1
   fi
+  if [[ $(which java | wc -l) -ne 1 ]]; then
+      echo "java (version=11) is not installed, please install:"
+      echo "https://adoptium.net/de/installation/"
+      exit 1
+  fi
   if [[ $(docker --version | grep -c "Docker version") -ne 1 ]]; then
     echo "docker not installed, please install:"
     echo "https://docs.docker.com/get-docker/"
