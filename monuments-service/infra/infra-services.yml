@@ -3,7 +3,7 @@ services:
 
   middleware-ws-infra-rabbitmq:
     image: rabbitmq:3.7-management-alpine
-    container_name: rabbitmq-service
+    container_name: rabbitmq
     environment:
       RABBITMQ_PASSWORD: guest
       RABBITMQ_USERNAME: guest
@@ -20,14 +20,39 @@ services:
 
   middleware-ws-infra-postgres:
     image: postgres:13.2
-    container_name: postgres-service
+    container_name: postgres
     ports:
-      - "7845:5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
     volumes:
       - ${PWD}/db-init/:/docker-entrypoint-initdb.d/
+    restart: unless-stopped
+    networks:
+      - docker_default
+
+  middleware-ws-backend:
+    image: timherbst/monuments-service:0.0.1
+    container_name: monuments-backend
+    depends_on:
+      - middleware-ws-infra-postgres
+      - middleware-ws-infra-rabbitmq
+    ports:
+      - "9001:9001"
+    restart: unless-stopped
+    networks:
+      - docker_default
+
+  middleware-ws-ui:
+    image: timherbst/monuments-ui:0.0.1
+    container_name: monuments-ui
+    depends_on:
+      - middleware-ws-infra-postgres
+      - middleware-ws-infra-rabbitmq
+      - middleware-ws-backend
+    ports:
+      - "8080:80"
     restart: unless-stopped
     networks:
       - docker_default
